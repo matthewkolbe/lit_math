@@ -3,18 +3,10 @@ name = "lit_math"
 version = "0.1.0"
 edition = "2021"
 
-[features]
-default = ["avx", "sse"]
-
-avx = []
-sse = []
-
 [build]
 rustflags = "-C target-cpu=native -O"
 
 [dependencies]
-lazy_static = "1.4.0"
-cargo-asm = "0.1.0"
 rand = "0.8.5"
 
 [dev-dependencies]

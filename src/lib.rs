@@ -1,6 +1,5 @@
 #![feature(stdsimd)]
+#![feature(avx512_target_feature)]
 
-mod exp;
-pub use exp::*;
-
-
+pub mod exp;
+mod constants;
