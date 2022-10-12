@@ -1,5 +1,5 @@
 #![feature(stdsimd)]
 #![feature(avx512_target_feature)]
 
-pub mod exp;
+pub mod lit;
 mod constants;

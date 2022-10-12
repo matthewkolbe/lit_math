@@ -1,7 +1,7 @@
 #![feature(stdsimd)]
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use lit_math::exp::*;
+use lit_math::lit::*;
 use rand;
 
 
