@@ -54,73 +54,65 @@ fn erfs_naive(c: &mut Criterion) {
 }
 
 fn exps256(c: &mut Criterion) {
-    unsafe{
-        c.bench_function("exps256", |b| {    
-            let mut x= [0.0; 2048];
-            let mut y = [0.0; 2048];
-            for i in 0..x.len(){
-                x[i] = rand::random();
-            }
-    
+    c.bench_function("exps256", |b| {    
+        let mut x= [0.0; 2048];
+        let mut y = [0.0; 2048];
+        for i in 0..x.len(){
+            x[i] = rand::random();
+        }
 
-            b.iter(|| {
-                exp256(&x, &mut y);
-                black_box(y[0]);
-            });
+
+        b.iter(|| {
+            exp256(&x, &mut y);
+            black_box(y[0]);
         });
-    }
+    });
 }
 
 fn exps512(c: &mut Criterion) {
-    unsafe{
-        c.bench_function("exps512", |b| {    
-            let mut x = [0.0; 2048];
-            let mut y = [0.0; 2048];
-            for i in 0..x.len(){
-                x[i] = rand::random();
-            }
+    c.bench_function("exps512", |b| {    
+        let mut x = [0.0; 2048];
+        let mut y = [0.0; 2048];
+        for i in 0..x.len(){
+            x[i] = rand::random();
+        }
 
-            b.iter(|| {
-                exp512(&x, &mut y);
-                black_box(y[0]);
-            });
+        b.iter(|| {
+            exp512(&x, &mut y);
+            black_box(y[0]);
         });
-    }
+    });
 }
 
 fn erfs512(c: &mut Criterion) {
-    unsafe{
-        c.bench_function("erfs512", |b| {    
-            let mut x = [0.0; 2048];
-            let mut y = [0.0; 2048];
-            for i in 0..x.len(){
-                x[i] = rand::random();
-            }
+    c.bench_function("erfs512", |b| {    
+        let mut x = [0.0; 2048];
+        let mut y = [0.0; 2048];
+        for i in 0..x.len(){
+            x[i] = rand::random();
+        }
 
-            b.iter(|| {
-                erf512(&x, &mut y);
-                black_box(y[0]);
-            });
+        b.iter(|| {
+            erf512(&x, &mut y);
+            black_box(y[0]);
         });
-    }
+    });
 }
 
 fn lns512(c: &mut Criterion) {
-    unsafe{
-        c.bench_function("lns512", |b| {    
-            let mut x = [0.0; 2048];
-            let mut y = [0.0; 2048];
-            for i in 0..x.len(){
-                x[i] = rand::random();
-                x[i] += 1.0;
-            }
+    c.bench_function("lns512", |b| {    
+        let mut x = [0.0; 2048];
+        let mut y = [0.0; 2048];
+        for i in 0..x.len(){
+            x[i] = rand::random();
+            x[i] += 1.0;
+        }
 
-            b.iter(|| {
-                ln512(&x, &mut y);
-                black_box(y[0]);
-            });
+        b.iter(|| {
+            ln512(&x, &mut y);
+            black_box(y[0]);
         });
-    }
+    });
 }
 
 
