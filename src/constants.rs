@@ -68,13 +68,6 @@ pub mod normdist
     use core::arch::x86_64::*;
 
     #[allow(unused_macros)]
-    macro_rules! m64x4_constant {
-        ( $x:expr ) => {
-            unsafe { std::mem::transmute::<_, _>(($x, $x, $x, $x)) }
-        };
-    }
-
-    #[allow(unused_macros)]
     macro_rules! m64x8_constant {
         ( $x:expr ) => {
             unsafe { std::mem::transmute::<_, _>(($x, $x, $x, $x, $x, $x, $x, $x)) }
@@ -100,4 +93,34 @@ pub mod normdist
     pub const D512E10: __m512d = m64x8_constant!(0.4759112697935371   );
     pub const D512E11: __m512d = m64x8_constant!(-0.1651167117117661  );
     pub const D512E12: __m512d = m64x8_constant!(0.022155411339686473);
+}
+
+
+pub mod log {
+    use core::arch::x86_64::*;
+
+    #[allow(unused_macros)]
+    macro_rules! m64x8_constant {
+        ( $x:expr ) => {
+            unsafe { std::mem::transmute::<_, _>(($x, $x, $x, $x, $x, $x, $x, $x)) }
+        };
+    }
+
+
+    pub const D512_TWO_THIRDS: __m512d = m64x8_constant!(0.6666666666666666666);
+    pub const D512_ONE: __m512d = m64x8_constant!(1.0);
+    pub const D512_ZERO: __m512d = m64x8_constant!(0.0);
+    pub const D512_NEGATIVE_INFINITY: __m512d = m64x8_constant!(f64::NEG_INFINITY);
+    pub const D512_LN2: __m512d  = m64x8_constant!(0.6931471805599453094172321214581766);
+    pub const D512_NAN: __m512d = m64x8_constant!(f64::NAN);
+
+    pub const D512_T0: __m512d = m64x8_constant!(0.5849625007211562024634018319  );
+    pub const D512_T1: __m512d = m64x8_constant!(2.88539008177795423263363741  );
+    pub const D512_T3: __m512d = m64x8_constant!(0.96179669389977077508752 );
+    pub const D512_T5: __m512d = m64x8_constant!(0.577078023612080068567 );
+    pub const D512_T7: __m512d = m64x8_constant!(0.4121976972049074185   );
+    pub const D512_T9: __m512d = m64x8_constant!(0.32065422990573868  );
+    pub const D512_T11: __m512d = m64x8_constant!(0.2604711365240256 );
+    pub const D512_T13: __m512d = m64x8_constant!(0.252528834803695 );
+
 }

@@ -1,103 +1,91 @@
 use std::arch::x86_64::*;
 use super::constants::*;
 
+macro_rules! unroll_fn {
+    ($name:ident, $fun:expr, $vsz:literal, $numsz:ty) => {
+        #[inline]
+        unsafe fn $name(x: &[$numsz], y: &mut [$numsz]) {
+            let n = x.len() as i32;
+
+            if n < $vsz as i32
+            {
+                let mut xx = [0.0; $vsz];
+                let mut yy = [0.0; $vsz];
+                for i in 0..x.len() {
+                    xx[i] = x[i];
+                }
+                
+                $fun(&xx, &mut yy, 0);
+                for i in 0..y.len() {
+                    y[i] = yy[i];
+                }
+                return;
+            }
+
+            let mut i: usize = 0;
+            while (i as i32) < (n - 4*$vsz - 1)
+            {
+                $fun(x, y, i);
+                i += $vsz;
+                $fun(x, y, i);
+                i += $vsz;
+                $fun(x, y, i);
+                i += $vsz;
+                $fun(x, y, i);
+                i += $vsz;
+            }
+
+            while (i as i32) < (n - $vsz + 1)
+            {
+                $fun(x, y, i);
+                i += $vsz;
+            }
+
+            if (i as i32) != n
+            {
+                i = (n as usize) - $vsz;
+                $fun(x, y, i);
+            }
+        }
+    };
+}
 
 #[inline]
-pub unsafe fn exp512(x: &[f64], y: &mut [f64])
+pub fn exp512(x: &[f64], y: &mut [f64])
 {
-    const VSZ: usize = 8;
-    let n = x.len() as i32;
-
-    // if n < 8, then we handle the special case by creating an 8 element array to work with
-    if n < VSZ as i32
-    {
-        let mut xx = [0.0; VSZ];
-        let mut yy = [0.0; VSZ];
-        for i in 0..x.len() {
-            xx[i] = x[i];
-        }
-        
-        exp512(&xx, &mut yy)
-    }
-
-    let mut i: usize = 0;
-
-    // Calculates values in an unrolled manner if the number of values is large enough
-    while (i as i32) < (n - 31)
-    {
-        expwo512(x, y, i);
-        i += VSZ;
-        expwo512(x, y, i);
-        i += VSZ;
-        expwo512(x, y, i);
-        i += VSZ;
-        expwo512(x, y, i);
-        i += VSZ;
-    }
-
-    // Calculates the remaining sets of 8 values in a standard loop
-    while (i as i32) < (n - 7)
-    {
-        expwo512(x, y, i);
-        i += VSZ;
-    }
-
-    // Cleans up any excess individual values (if n%8 != 0)
-    if (i as i32) != n
-    {
-        i = (n as usize) - VSZ;
-        expwo512(x, y, i);
+    unsafe{
+        exp512u(x, y);
     }
 }
 
 #[inline]
-pub unsafe fn exp256(x: &[f64], y: &mut [f64])
+pub fn exp256(x: &[f64], y: &mut [f64])
 {
-    const VSZ: usize = 4;
-    let n = x.len() as i32;
-
-    // if n < 4, then we handle the special case by creating a 4 element array to work with
-    if n < VSZ as i32
-    {
-        let mut xx = [0.0; VSZ];
-        let mut yy = [0.0; VSZ];
-        for i in 0..x.len() {
-            xx[i] = x[i];
-        }
-        
-        exp256(&xx, &mut yy)
-    }
-
-    let mut i: usize = 0;
-
-    // Calculates values in an unrolled manner if the number of values is large enough
-    while (i as i32) < (n - 31)
-    {
-        expwo256(x, y, i);
-        i += VSZ;
-        expwo256(x, y, i);
-        i += VSZ;
-        expwo256(x, y, i);
-        i += VSZ;
-        expwo256(x, y, i);
-        i += VSZ;
-    }
-
-    // Calculates the remaining sets of 8 values in a standard loop
-    while (i as i32) < (n - 7)
-    {
-        expwo256(x, y, i);
-        i += VSZ;
-    }
-
-    // Cleans up any excess individual values (if n%4 != 0)
-    if (i as i32) != n
-    {
-        i = (n as usize) - VSZ;
-        expwo256(x, y, i);
+    unsafe{
+        exp256u(x, y);
     }
 }
 
+#[inline]
+pub fn erf512(x: &[f64], y: &mut [f64])
+{
+    unsafe{
+        erf512u(x, y);
+    }
+}
+
+#[inline]
+pub fn ln512(x: &[f64], y: &mut [f64])
+{
+    unsafe{
+        ln512u(x, y);
+    }
+}
+
+unroll_fn!(exp512u, expwo512, 8, f64);
+unroll_fn!(exp256u, expwo256, 4, f64);
+unroll_fn!(erf512u, erfwo512, 8, f64);
+unroll_fn!(ln512u, lnwo512, 8, f64);
 
 #[target_feature(enable ="avx512f")]
 unsafe fn expwo512(x: &[f64], y: &mut [f64], offset: usize)
@@ -133,7 +121,7 @@ pub unsafe fn expo256(x: &__m256d, y: &mut __m256d)
 }
 
 #[target_feature(enable ="avx512f")]
-unsafe fn two512(x: &__m512d, y: &mut __m512d)
+pub unsafe fn two512(x: &__m512d, y: &mut __m512d)
 {
     // Checks if x is greater than the highest acceptable argument. Stores the information for later to
     // modify the result. If, for example, only x[1] > EXP_HIGH, then end[1] will be infinity, and the rest
@@ -174,15 +162,15 @@ unsafe fn two512(x: &__m512d, y: &mut __m512d)
     // Combines the two exponentials and the end adjustments into the result.
     *y = _mm512_mul_pd(*y, fx);
 
-    *y = _mm512_mask_add_pd(exp::D512_POSITIVE_INFINITY, inf_mask, exp::D512_ZERO, *y);
-    *y = _mm512_mask_add_pd(exp::D512_NAN, nan_mask, *y, exp::D512_ZERO);
+    *y = _mm512_mask_blend_pd(inf_mask, exp::D512_POSITIVE_INFINITY, *y);
+    *y = _mm512_mask_blend_pd(nan_mask, exp::D512_NAN, *y);
 }
 
 
 #[target_feature(enable ="avx")]
 #[target_feature(enable ="avx512f")]
 #[target_feature(enable ="fma")]
-unsafe fn two256(x: &__m256d, y: &mut __m256d)
+pub unsafe fn two256(x: &__m256d, y: &mut __m256d)
 {
     // Checks if x is greater than the highest acceptable argument. Stores the information for later to
     // modify the result. If, for example, only x[1] > EXP_HIGH, then end[1] will be infinity, and the rest
@@ -229,7 +217,17 @@ unsafe fn two256(x: &__m256d, y: &mut __m256d)
 
 
 #[target_feature(enable ="avx512f")]
-pub unsafe fn erf512(x: &__m512d, y: &mut __m512d)
+unsafe fn erfwo512(x: &[f64], y: &mut [f64], offset: usize)
+{
+    let xx = _mm512_loadu_pd(&x[offset] as *const f64);
+    let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
+    erfo512(&xx, &mut yy);
+    _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
+}
+
+/// AVX-512 implementation of the ERF function.
+#[target_feature(enable ="avx512f")]
+pub unsafe fn erfo512(x: &__m512d, y: &mut __m512d)
 {
 
     let le_mask = _mm512_cmple_pd_mask(*x, normdist::D512NEGATIVE_ZERO);
@@ -258,8 +256,62 @@ pub unsafe fn erf512(x: &__m512d, y: &mut __m512d)
     yy = _mm512_mul_pd(yy, t);
     yy = _mm512_add_pd(normdist::D512ONE, yy);
 
-    let a = _mm512_maskz_mul_pd(le_mask, yy, normdist::D512NEGONE);
-    let b = _mm512_maskz_add_pd(!le_mask, yy, normdist::D512ZERO);
-    *y = _mm512_add_pd(a, b);
+    *y = _mm512_mask_blend_pd(le_mask, yy, _mm512_mul_pd(yy, normdist::D512NEGONE));
     
+}
+
+
+#[target_feature(enable ="avx512f")]
+unsafe fn lnwo512(x: &[f64], y: &mut [f64], offset: usize)
+{
+    let xx = _mm512_loadu_pd(&x[offset] as *const f64);
+    let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
+    logo512(&xx, &mut yy);
+    _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
+}
+
+#[target_feature(enable ="avx512f")]
+pub unsafe fn logo512(x: &__m512d, y: &mut __m512d)
+{
+    logo2(&x, y);
+    *y = _mm512_mul_pd(log::D512_LN2, *y);
+}
+
+#[target_feature(enable ="avx512f")]
+pub unsafe fn logo2(x: &__m512d, y: &mut __m512d)
+{
+    // This algorithm uses the properties of floating point number to transform x into d*2^m, so log(x)
+    // becomes log(d)+m, where d is in [1, 2]. Then it uses a series approximation of log to approximate 
+    // the value in [1, 2]
+
+    let xl = _mm512_getexp_pd(*x);
+    let mantissa = _mm512_getmant_pd(*x, _MM_MANT_NORM_1_2, _MM_MANT_SIGN_SRC);
+
+    log2_in_1_2(&mantissa, y);
+
+    *y = _mm512_add_pd(*y, xl);
+    *y = _mm512_mask_blend_pd(_mm512_cmplt_pd_mask(*x, log::D512_ZERO), *y, log::D512_NAN);
+    *y = _mm512_mask_blend_pd(_mm512_cmpeq_pd_mask(*x, log::D512_ZERO), *y, log::D512_NEGATIVE_INFINITY);
+    //*y = _mm512_mask_blend_pd(_mm512_cmpeq_pd_mask(*x, log::D512_POSITIVE_INFINITY), log::D512_POSITIVE_INFINITY, *y);
+    //*y = _mm512_mask_blend_pd(_mm512_cmpeq_pd_mask(*x, *x), *y, log::D512_NAN);
+}
+
+
+/// AVX-512 implementation of log base 2 in the interval of [1,2]
+#[target_feature(enable ="avx512f")]
+unsafe fn log2_in_1_2(x: &__m512d, y: &mut __m512d)
+{
+    *y = _mm512_mul_pd(*x, log::D512_TWO_THIRDS);
+    *y = _mm512_div_pd(_mm512_sub_pd(*y, log::D512_ONE), _mm512_add_pd(*y, log::D512_ONE));
+    let ysq = _mm512_mul_pd(*y, *y);
+
+    let mut rx = _mm512_fmadd_pd(ysq, log::D512_T13, log::D512_T11);
+    rx = _mm512_fmadd_pd(ysq, rx, log::D512_T9);
+    rx = _mm512_fmadd_pd(ysq, rx, log::D512_T7);
+    rx = _mm512_fmadd_pd(ysq, rx, log::D512_T5);
+    rx = _mm512_fmadd_pd(ysq, rx, log::D512_T3);
+    rx = _mm512_fmadd_pd(ysq, rx, log::D512_T1);
+
+    rx = _mm512_mul_pd(*y, rx);
+    *y = _mm512_add_pd(rx, log::D512_T0)
 }
