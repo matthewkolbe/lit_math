@@ -9,8 +9,7 @@ fn exp_test()
     let x = [0.0, 1.0, f64::INFINITY, -900.0, 900.0, f64::NAN, f64::NEG_INFINITY, -3.14159, 3.14159];
     let mut y = [0.0; 9];
 
-    unsafe{
-        exp512(&x, &mut y);}
+    exp512(&x, &mut y);
 
     let mut r = relative_eq!(y[0], f64::exp(x[0]), epsilon = 1e-16);
     assert!(r);
@@ -36,8 +35,7 @@ fn erf_test()
     let mut y = [0.0; 9];
     let eps = 1e-11;
 
-    unsafe{
-        erf512(&x, &mut y);}
+    erf512(&x, &mut y);
 
     let mut r = relative_eq!(y[0], erf(x[0]), epsilon = eps);
     assert!(r);
@@ -61,8 +59,7 @@ fn log_test()
     let mut y= [0.0; 8];
     let eps = 5e-16;
 
-    unsafe{
-        ln512(&x, &mut y);}
+    ln512(&x, &mut y);
 
     println!("{:?}", y);
 
