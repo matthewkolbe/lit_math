@@ -1,6 +1,5 @@
 #[cfg(test)]
 
-use lit_math::lit::*;
 use lit_math::*;
 use approx::*;
 
@@ -36,7 +35,7 @@ fn erf_test()
     let mut y = [0.0; 9];
     let eps = 1e-11;
 
-    lit::erf(&x, &mut y);
+    lit_math::erf(&x, &mut y);
 
     let mut r = relative_eq!(y[0], erf(x[0]), epsilon = eps);
     assert!(r);
