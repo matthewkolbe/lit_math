@@ -36,6 +36,22 @@ fn lns_naive(c: &mut Criterion) {
     });
 }
 
+fn log2_naive(c: &mut Criterion) {
+    c.bench_function("log2_naive", |b| {    
+        let mut x= [0.0; 2048];
+        let mut y = [0.0; 2048];
+        for i in 0..x.len(){
+            x[i] = rand::random();
+            x[i] += 1.0;
+        }
+
+        b.iter(|| {
+            for i in 0..x.len() {
+                black_box(y[i] = f64::log2(x[i])); }
+        });
+    });
+}
+
 fn erfs_naive(c: &mut Criterion) {
     use statrs::function::erf::erf;
 
@@ -100,6 +116,29 @@ fn lns512(c: &mut Criterion) {
     });
 }
 
+fn log2s512(c: &mut Criterion) {
+    c.bench_function("log2s512", |b| {    
+        let mut x = [0.0; 2048];
+        let mut y = [0.0; 2048];
+        for i in 0..x.len(){
+            x[i] = rand::random();
+            x[i] += 1.0;
+        }
 
-criterion_group!(benches, exps_naive, lns_naive, erfs_naive, exps512, erfs512, lns512);
+        b.iter(|| {
+            log2(&x, &mut y);
+            black_box(y[0]);
+        });
+    });
+}
+
+criterion_group!(benches, 
+    exps_naive, 
+    lns_naive, 
+    log2_naive, 
+    erfs_naive, 
+    exps512, 
+    erfs512, 
+    lns512,
+    log2s512);
 criterion_main!(benches);

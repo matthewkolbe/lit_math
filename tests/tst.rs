@@ -6,24 +6,42 @@ use approx::*;
 #[test]
 fn exp_test()
 {
-    let x = [0.0, 1.0, f64::INFINITY, -900.0, 900.0, f64::NAN, f64::NEG_INFINITY, -3.14159, 3.14159];
-    let mut y = [0.0; 9];
+    let eps = 1e-17;
+
+    let mut x = [0.0; 1000];
+    x[0] = 0.0;
+    x[1] = 1.0;
+    x[2] = f64::INFINITY;
+    x[3] = -900.0;
+    x[4] = 900.0;
+    x[5] = f64::NAN;
+    x[6] = f64::NEG_INFINITY;
+
+    for i in 7..1000
+    {
+        x[i] = -0.5 + (i as f64) / 1000.0;
+    }
+
+    let mut y = [0.0; 1000];
 
     exp(&x, &mut y);
 
-    let mut r = relative_eq!(y[0], f64::exp(x[0]), epsilon = 1e-16);
+    let mut r = relative_eq!(y[0], f64::exp(x[0]), epsilon = eps);
     assert!(r);
-    r = relative_eq!(y[1], f64::exp(x[1]), epsilon = 1e-16);
+    r = relative_eq!(y[1], f64::exp(x[1]), epsilon = eps);
     assert!(r);
     assert_eq!(y[2], f64::INFINITY);
     assert_eq!(y[3], 0.0);
     assert_eq!(y[4], f64::INFINITY);
     assert!(f64::is_nan(y[5]));
     assert_eq!(y[6], 0.0);
-    r = relative_eq!(y[7], f64::exp(x[7]), epsilon = 1e-16);
-    assert!(r);
-    r = relative_eq!(y[8], f64::exp(x[8]), epsilon = 1e-14);
-    assert!(r);
+
+    for i in 7..1000
+    {
+        r = relative_eq!(y[i], f64::exp(x[i]), epsilon = eps);
+        assert!(r);
+    }
+
 }
 
 #[test]
