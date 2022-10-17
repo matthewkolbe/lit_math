@@ -169,7 +169,7 @@ unsafe fn ln_with_offset(x: &[f64], y: &mut [f64], offset: usize)
 {
     let xx = _mm512_loadu_pd(&x[offset] as *const f64);
     let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    log2intr(&xx, &mut yy);
+    lnintr(&xx, &mut yy);
     _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
 }
 
@@ -195,8 +195,6 @@ pub unsafe fn _mm512_log2_pd(x: __m512d) -> __m512d
     log2intr(&x, &mut y);
     y
 }
-
-
 
 #[target_feature(enable ="avx512f")]
 pub unsafe fn log2intr(x: &__m512d, y: &mut __m512d)

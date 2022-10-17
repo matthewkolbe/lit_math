@@ -53,21 +53,6 @@ fn erfs_naive(c: &mut Criterion) {
     });
 }
 
-fn exps256(c: &mut Criterion) {
-    c.bench_function("exps256", |b| {    
-        let mut x= [0.0; 2048];
-        let mut y = [0.0; 2048];
-        for i in 0..x.len(){
-            x[i] = rand::random();
-        }
-
-
-        b.iter(|| {
-            exp256(&x, &mut y);
-            black_box(y[0]);
-        });
-    });
-}
 
 fn exps512(c: &mut Criterion) {
     c.bench_function("exps512", |b| {    
@@ -78,7 +63,7 @@ fn exps512(c: &mut Criterion) {
         }
 
         b.iter(|| {
-            exp512(&x, &mut y);
+            exp(&x, &mut y);
             black_box(y[0]);
         });
     });
@@ -93,7 +78,7 @@ fn erfs512(c: &mut Criterion) {
         }
 
         b.iter(|| {
-            erf512(&x, &mut y);
+            erf(&x, &mut y);
             black_box(y[0]);
         });
     });
@@ -109,12 +94,12 @@ fn lns512(c: &mut Criterion) {
         }
 
         b.iter(|| {
-            ln512(&x, &mut y);
+            ln(&x, &mut y);
             black_box(y[0]);
         });
     });
 }
 
 
-criterion_group!(benches, exps_naive, lns_naive, erfs_naive, exps256, exps512, erfs512, lns512);
+criterion_group!(benches, exps_naive, lns_naive, erfs_naive, exps512, erfs512, lns512);
 criterion_main!(benches);
