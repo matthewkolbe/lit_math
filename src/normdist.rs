@@ -27,7 +27,7 @@ unsafe fn standard_normal_cdf_with_offset(x: &[f64], y: &mut [f64], offset: usiz
 {
     let xx = _mm512_loadu_pd(&x[offset] as *const f64);
     let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    stdnormintr(&xx, &mut yy);
+    stdnorm_intr(&xx, &mut yy);
 }
 
 #[target_feature(enable ="avx512f")]
@@ -35,7 +35,7 @@ unsafe fn erf_with_offset(x: &[f64], y: &mut [f64], offset: usize)
 {
     let xx = _mm512_loadu_pd(&x[offset] as *const f64);
     let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    erfintr(&xx, &mut yy);
+    erf_intr(&xx, &mut yy);
     _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
 }
 
@@ -43,7 +43,7 @@ unsafe fn erf_with_offset(x: &[f64], y: &mut [f64], offset: usize)
 pub unsafe fn _mm512_erf_pd(x: __m512d) -> __m512d
 {
     let mut y = D512ZERO;
-    erfintr(&x, &mut y);
+    erf_intr(&x, &mut y);
     y
 }
 
@@ -51,21 +51,21 @@ pub unsafe fn _mm512_erf_pd(x: __m512d) -> __m512d
 pub unsafe fn _mm512_std_norm_cdf_pd(x: __m512d) -> __m512d
 {
     let mut y = D512ZERO;
-    stdnormintr(&x, &mut y);
+    stdnorm_intr(&x, &mut y);
     y
 }
 
 #[target_feature(enable ="avx512f")]
-unsafe fn stdnormintr(x: &__m512d, y: &mut __m512d)
+unsafe fn stdnorm_intr(x: &__m512d, y: &mut __m512d)
 {
-    erfintr(x, y);
+    erf_intr(x, y);
     *y = _mm512_add_pd(*y, D512ONE);
     *y = _mm512_mul_pd(*y, D512HALF);
 }
 
 /// AVX-512 implementation of the ERF function.
 #[target_feature(enable ="avx512f")]
-pub unsafe fn erfintr(x: &__m512d, y: &mut __m512d)
+pub unsafe fn erf_intr(x: &__m512d, y: &mut __m512d)
 {
     let le_mask = _mm512_cmple_pd_mask(*x, D512NEGATIVE_ZERO);
     let xx = _mm512_abs_pd(*x);
@@ -88,7 +88,7 @@ pub unsafe fn erfintr(x: &__m512d, y: &mut __m512d)
 
     let exsq = _mm512_mul_pd(_mm512_mul_pd(xx, D512NEGONE), xx);
 
-    super::exp::expintr(&exsq, &mut t);
+    exp_intr(&exsq, &mut t);
 
     yy = _mm512_mul_pd(yy, t);
     yy = _mm512_add_pd(D512ONE, yy);

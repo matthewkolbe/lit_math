@@ -25,7 +25,7 @@ unsafe fn exp_with_offset(x: &[f64], y: &mut [f64], offset: usize)
 {
     let xx = _mm512_loadu_pd(&x[offset] as *const f64);
     let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    expintr(&xx, &mut yy);
+    exp_intr(&xx, &mut yy);
     _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
 }
 
@@ -34,15 +34,15 @@ unsafe fn exp2_with_offset(x: &[f64], y: &mut [f64], offset: usize)
 {
     let xx = _mm512_loadu_pd(&x[offset] as *const f64);
     let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    exp2intr(&xx, &mut yy);
+    exp2_intr(&xx, &mut yy);
     _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
 }
 
 #[target_feature(enable ="avx512f")]
-pub unsafe fn expintr(x: &__m512d, y: &mut __m512d)
+pub unsafe fn exp_intr(x: &__m512d, y: &mut __m512d)
 {
     let xx = _mm512_mul_pd(*x, D512_LOG2EF);
-    exp2intr(&xx, y);
+    exp2_intr(&xx, y);
 }
 
 #[target_feature(enable ="avx512f")]
@@ -50,7 +50,7 @@ pub unsafe fn _mm512_powe_pd(x: __m512d) -> __m512d
 {
     let xx = _mm512_mul_pd(x, D512_LOG2EF);
     let mut y = D512_ZERO;
-    exp2intr(&xx, &mut y);
+    exp2_intr(&xx, &mut y);
     y
 }
 
@@ -58,12 +58,12 @@ pub unsafe fn _mm512_powe_pd(x: __m512d) -> __m512d
 pub unsafe fn _mm512_pow2_pd(x: __m512d) -> __m512d
 {
     let mut y = D512_ZERO;
-    exp2intr(&x, &mut y);
+    exp2_intr(&x, &mut y);
     y
 }
 
 #[target_feature(enable ="avx512f")]
-pub unsafe fn exp2intr(x: &__m512d, y: &mut __m512d)
+pub unsafe fn exp2_intr(x: &__m512d, y: &mut __m512d)
 {
     // Checks if x is greater than the highest acceptable argument. Stores the information for later to
     // modify the result. If, for example, only x[1] > EXP_HIGH, then end[1] will be infinity, and the rest

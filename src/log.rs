@@ -26,7 +26,7 @@ unsafe fn ln_with_offset(x: &[f64], y: &mut [f64], offset: usize)
 {
     let xx = _mm512_loadu_pd(&x[offset] as *const f64);
     let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    lnintr(&xx, &mut yy);
+    ln_intr(&xx, &mut yy);
     _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
 }
 
@@ -35,14 +35,14 @@ unsafe fn log2_with_offset(x: &[f64], y: &mut [f64], offset: usize)
 {
     let xx = _mm512_loadu_pd(&x[offset] as *const f64);
     let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    log2intr(&xx, &mut yy);
+    log2_intr(&xx, &mut yy);
     _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
 }
 
 #[target_feature(enable ="avx512f")]
-pub unsafe fn lnintr(x: &__m512d, y: &mut __m512d)
+pub unsafe fn ln_intr(x: &__m512d, y: &mut __m512d)
 {
-    log2intr(&x, y);
+    log2_intr(&x, y);
     *y = _mm512_mul_pd(D512_LN2, *y);
 }
 
@@ -50,7 +50,7 @@ pub unsafe fn lnintr(x: &__m512d, y: &mut __m512d)
 pub unsafe fn _mm512_ln_pd(x: __m512d) -> __m512d
 {
     let mut y = log::D512_ZERO;
-    log2intr(&x, &mut y);
+    log2_intr(&x, &mut y);
     _mm512_mul_pd(D512_LN2, y)
 }
 
@@ -58,12 +58,12 @@ pub unsafe fn _mm512_ln_pd(x: __m512d) -> __m512d
 pub unsafe fn _mm512_log2_pd(x: __m512d) -> __m512d
 {
     let mut y = D512_ZERO;
-    log2intr(&x, &mut y);
+    log2_intr(&x, &mut y);
     y
 }
 
 #[target_feature(enable ="avx512f")]
-pub unsafe fn log2intr(x: &__m512d, y: &mut __m512d)
+pub unsafe fn log2_intr(x: &__m512d, y: &mut __m512d)
 {
     // This algorithm uses the properties of floating point number to transform x into d*2^m, so log(x)
     // becomes log(d)+m, where d is in [1, 2]. Then it uses a series approximation of log to approximate 
