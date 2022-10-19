@@ -17,26 +17,24 @@ pub fn exp2(x: &[f64], y: &mut [f64])
     }
 }
 
-unroll_fn!(expu, exp_with_offset, 8, f64);
-unroll_fn!(exp2u, exp2_with_offset, 8, f64);
-
-#[target_feature(enable ="avx512f")]
-unsafe fn exp_with_offset(x: &[f64], y: &mut [f64], offset: usize)
+#[inline]
+pub fn expv(x: &Vec<f64>, y: &mut Vec<f64>)
 {
-    let xx = _mm512_loadu_pd(&x[offset] as *const f64);
-    let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    exp_intr(&xx, &mut yy);
-    _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
+    unsafe{
+        expvu(x, y);
+    }
 }
 
-#[target_feature(enable ="avx512f")]
-unsafe fn exp2_with_offset(x: &[f64], y: &mut [f64], offset: usize)
+#[inline]
+pub fn exp2v(x: &Vec<f64>, y: &mut Vec<f64>)
 {
-    let xx = _mm512_loadu_pd(&x[offset] as *const f64);
-    let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    exp2_intr(&xx, &mut yy);
-    _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
+    unsafe{
+        exp2vu(x, y);
+    }
 }
+
+unroll_fn!(expu, expvu, exp_intr, 8, f64);
+unroll_fn!(exp2u, exp2vu, exp2_intr, 8, f64);
 
 #[target_feature(enable ="avx512f")]
 pub unsafe fn exp_intr(x: &__m512d, y: &mut __m512d)

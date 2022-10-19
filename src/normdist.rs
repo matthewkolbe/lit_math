@@ -18,26 +18,24 @@ pub fn standard_normal_cdf(x: &[f64], y: &mut [f64])
     }
 }
 
-unroll_fn!(erfu, erf_with_offset, 8, f64);
-unroll_fn!(standard_normal_cdfu, standard_normal_cdf_with_offset, 8, f64);
-
-
-#[target_feature(enable ="avx512f")]
-unsafe fn standard_normal_cdf_with_offset(x: &[f64], y: &mut [f64], offset: usize)
+#[inline]
+pub fn erfv(x: &Vec<f64>, y: &mut Vec<f64>)
 {
-    let xx = _mm512_loadu_pd(&x[offset] as *const f64);
-    let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    stdnorm_intr(&xx, &mut yy);
+    unsafe{
+        erfvu(x, y);
+    }
 }
 
-#[target_feature(enable ="avx512f")]
-unsafe fn erf_with_offset(x: &[f64], y: &mut [f64], offset: usize)
+#[inline]
+pub fn standard_normal_cdfv(x: &Vec<f64>, y: &mut Vec<f64>)
 {
-    let xx = _mm512_loadu_pd(&x[offset] as *const f64);
-    let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    erf_intr(&xx, &mut yy);
-    _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
+    unsafe{
+        standard_normal_cdfvu(x, y);
+    }
 }
+
+unroll_fn!(erfu, erfvu, erf_intr, 8, f64);
+unroll_fn!(standard_normal_cdfu, standard_normal_cdfvu, stdnorm_intr, 8, f64);
 
 #[target_feature(enable ="avx512f")]
 pub unsafe fn _mm512_erf_pd(x: __m512d) -> __m512d

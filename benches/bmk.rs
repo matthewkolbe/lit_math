@@ -1,16 +1,19 @@
 #![feature(stdsimd)]
+#![feature(new_uninit)]
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use lit_math::*;
 use rand;
 
+const N: usize = 2048;
 
 fn exps_naive(c: &mut Criterion) {
-    c.bench_function("exps_naive", |b| {    
-        let mut x= [0.0; 2048];
-        let mut y = [0.0; 2048];
-        for i in 0..x.len(){
-            x[i] = rand::random();
+    c.bench_function("exps_naive", |b| {   
+        let mut x = Vec::new();
+        let mut y = Vec::new();
+        for i in 0..N{
+            x.push(rand::random());
+            y.push(0.0);
         }
 
         b.iter(|| {
@@ -22,8 +25,8 @@ fn exps_naive(c: &mut Criterion) {
 
 fn lns_naive(c: &mut Criterion) {
     c.bench_function("lns_naive", |b| {    
-        let mut x= [0.0; 2048];
-        let mut y = [0.0; 2048];
+        let mut x= [0.0; N];
+        let mut y = [0.0; N];
         for i in 0..x.len(){
             x[i] = rand::random();
             x[i] += 1.0;
@@ -38,8 +41,8 @@ fn lns_naive(c: &mut Criterion) {
 
 fn log2_naive(c: &mut Criterion) {
     c.bench_function("log2_naive", |b| {    
-        let mut x= [0.0; 2048];
-        let mut y = [0.0; 2048];
+        let mut x= [0.0; N];
+        let mut y = [0.0; N];
         for i in 0..x.len(){
             x[i] = rand::random();
             x[i] += 1.0;
@@ -56,8 +59,8 @@ fn erfs_naive(c: &mut Criterion) {
     use statrs::function::erf::erf;
 
     c.bench_function("erfs_naive", |b| {    
-        let mut x= [0.0; 2048];
-        let mut y = [0.0; 2048];
+        let mut x= [0.0; N];
+        let mut y = [0.0; N];
         for i in 0..x.len(){
             x[i] = rand::random();
         }
@@ -71,8 +74,8 @@ fn erfs_naive(c: &mut Criterion) {
 
 fn atans_naive(c: &mut Criterion) {
     c.bench_function("atans_naive", |b| {    
-        let mut x= [0.0; 2048];
-        let mut y = [0.0; 2048];
+        let mut x= [0.0; N];
+        let mut y = [0.0; N];
         for i in 0..x.len(){
             x[i] = rand::random();
             x[i] -= 0.5;
@@ -88,8 +91,8 @@ fn atans_naive(c: &mut Criterion) {
 
 fn sins_naive(c: &mut Criterion) {
     c.bench_function("sins_naive", |b| {    
-        let mut x= [0.0; 2048];
-        let mut y = [0.0; 2048];
+        let mut x= [0.0; N];
+        let mut y = [0.0; N];
         for i in 0..x.len(){
             x[i] = rand::random();
             x[i] -= 0.5;
@@ -106,8 +109,8 @@ fn sins_naive(c: &mut Criterion) {
 
 fn exps512(c: &mut Criterion) {
     c.bench_function("exps512", |b| {    
-        let mut x = [0.0; 2048];
-        let mut y = [0.0; 2048];
+        let mut x = [0.0; N];
+        let mut y = [0.0; N];
         for i in 0..x.len(){
             x[i] = rand::random();
         }
@@ -119,10 +122,27 @@ fn exps512(c: &mut Criterion) {
     });
 }
 
+fn expvs512(c: &mut Criterion) {
+    c.bench_function("expvs512", |b| {    
+        let mut x = Vec::new();
+        let mut y = Vec::new();
+        for i in 0..N{
+            x.push(rand::random());
+            y.push(0.0);
+        }
+
+        b.iter(|| {
+            expv(&x, &mut y);
+            black_box(y[0]);
+        });
+    });
+}
+
+
 fn erfs512(c: &mut Criterion) {
     c.bench_function("erfs512", |b| {    
-        let mut x = [0.0; 2048];
-        let mut y = [0.0; 2048];
+        let mut x = [0.0; N];
+        let mut y = [0.0; N];
         for i in 0..x.len(){
             x[i] = rand::random();
         }
@@ -136,8 +156,8 @@ fn erfs512(c: &mut Criterion) {
 
 fn lns512(c: &mut Criterion) {
     c.bench_function("lns512", |b| {    
-        let mut x = [0.0; 2048];
-        let mut y = [0.0; 2048];
+        let mut x = [0.0; N];
+        let mut y = [0.0; N];
         for i in 0..x.len(){
             x[i] = rand::random();
             x[i] += 1.0;
@@ -152,8 +172,8 @@ fn lns512(c: &mut Criterion) {
 
 fn log2s512(c: &mut Criterion) {
     c.bench_function("log2s512", |b| {    
-        let mut x = [0.0; 2048];
-        let mut y = [0.0; 2048];
+        let mut x = [0.0; N];
+        let mut y = [0.0; N];
         for i in 0..x.len(){
             x[i] = rand::random();
             x[i] += 1.0;
@@ -168,8 +188,8 @@ fn log2s512(c: &mut Criterion) {
 
 fn atans512(c: &mut Criterion) {
     c.bench_function("atans512", |b| {    
-        let mut x = [0.0; 2048];
-        let mut y = [0.0; 2048];
+        let mut x = [0.0; N];
+        let mut y = [0.0; N];
         for i in 0..x.len(){
             x[i] = rand::random();
             x[i] -= 0.5;
@@ -185,8 +205,8 @@ fn atans512(c: &mut Criterion) {
 
 fn sins512(c: &mut Criterion) {
     c.bench_function("sins512", |b| {    
-        let mut x = [0.0; 2048];
-        let mut y = [0.0; 2048];
+        let mut x = [0.0; N];
+        let mut y = [0.0; N];
         for i in 0..x.len(){
             x[i] = rand::random();
             x[i] -= 0.5;
@@ -209,9 +229,10 @@ criterion_group!(benches,
     atans_naive,
     sins_naive,
     exps512, 
-    erfs512, 
+    expvs512,
     lns512,
     log2s512,
+    erfs512,
     atans512,
     sins512
 );

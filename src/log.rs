@@ -18,26 +18,25 @@ pub fn log2(x: &[f64], y: &mut [f64])
     }
 }
 
-unroll_fn!(lnu, ln_with_offset, 8, f64);
-unroll_fn!(log2u, log2_with_offset, 8, f64);
-
-#[target_feature(enable ="avx512f")]
-unsafe fn ln_with_offset(x: &[f64], y: &mut [f64], offset: usize)
+#[inline]
+pub fn lnv(x: &Vec<f64>, y: &mut Vec<f64>)
 {
-    let xx = _mm512_loadu_pd(&x[offset] as *const f64);
-    let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    ln_intr(&xx, &mut yy);
-    _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
+    unsafe{
+        lnvu(x, y);
+    }
 }
 
-#[target_feature(enable ="avx512f")]
-unsafe fn log2_with_offset(x: &[f64], y: &mut [f64], offset: usize)
+#[inline]
+pub fn log2v(x: &Vec<f64>, y: &mut Vec<f64>)
 {
-    let xx = _mm512_loadu_pd(&x[offset] as *const f64);
-    let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    log2_intr(&xx, &mut yy);
-    _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
+    unsafe{
+        log2vu(x, y);
+    }
 }
+
+
+unroll_fn!(lnu, lnvu, ln_intr, 8, f64);
+unroll_fn!(log2u, log2vu, log2_intr, 8, f64);
 
 #[target_feature(enable ="avx512f")]
 pub unsafe fn ln_intr(x: &__m512d, y: &mut __m512d)

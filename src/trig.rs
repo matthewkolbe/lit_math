@@ -25,18 +25,34 @@ pub fn atan(x: &[f64], y: &mut [f64])
     }
 }
 
-unroll_fn!(sinu, sin_with_offset, 8, f64);
-unroll_fn!(tanu, tan_with_offset, 8, f64);
-unroll_fn!(atanu, atan_with_offset, 8, f64);
-
-#[target_feature(enable ="avx512f")]
-unsafe fn sin_with_offset(x: &[f64], y: &mut [f64], offset: usize)
+#[inline]
+pub fn sinv(x: &Vec<f64>, y: &mut Vec<f64>)
 {
-    let xx = _mm512_loadu_pd(&x[offset] as *const f64);
-    let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    sin_intr(&xx, &mut yy);
-    _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
+    unsafe{
+        sinvu(x, y);
+    }
 }
+
+#[inline]
+pub fn tanv(x: &Vec<f64>, y: &mut Vec<f64>)
+{
+    unsafe{
+        tanvu(x, y);
+    }
+}
+
+#[inline]
+pub fn atanv(x: &Vec<f64>, y: &mut Vec<f64>)
+{
+    unsafe{
+        atanvu(x, y);
+    }
+}
+
+unroll_fn!(sinu, sinvu, sin_intr, 8, f64);
+unroll_fn!(tanu, tanvu, tan_intr, 8, f64);
+unroll_fn!(atanu, atanvu, atan_intr, 8, f64);
+
 
 #[target_feature(enable ="avx512f")]
 pub unsafe fn sin_intr(x: &__m512d, y: &mut __m512d)
@@ -81,15 +97,6 @@ unsafe fn sin_in_zero_to_quarter_pi(x: &__m512d, y: &mut __m512d)
     *y = _mm512_fmadd_pd(*y, xsq, D512_SQP3);
     *y = _mm512_fmadd_pd(*y, xsq, D512_ONE);
     *y = _mm512_mul_pd(*y, *x);
-}
-
-#[target_feature(enable ="avx512f")]
-unsafe fn tan_with_offset(x: &[f64], y: &mut [f64], offset: usize)
-{
-    let xx = _mm512_loadu_pd(&x[offset] as *const f64);
-    let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    tan_intr(&xx, &mut yy);
-    _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
 }
 
 
@@ -140,14 +147,6 @@ pub unsafe fn tan_intr(x: &__m512d, y: &mut __m512d)
     *y = _mm512_mask_mul_pd(*y, negend_mask, D512_NEGONE, *y);
 }
 
-#[target_feature(enable ="avx512f")]
-unsafe fn atan_with_offset(x: &[f64], y: &mut [f64], offset: usize)
-{
-    let xx = _mm512_loadu_pd(&x[offset] as *const f64);
-    let mut yy = _mm512_loadu_pd(&y[offset] as *const f64);
-    atan_intr(&xx, &mut yy);
-    _mm512_storeu_pd(&mut y[offset] as *mut f64, yy);
-}
 
 #[target_feature(enable ="avx512f")]
 pub unsafe fn atan_intr(x: &__m512d, y: &mut __m512d)
