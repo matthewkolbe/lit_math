@@ -12,3 +12,4 @@ pub use exp::*;
 pub use log::*;
 pub use normdist::*;
 pub use trig::*;
+pub use unroller::*;
