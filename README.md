@@ -7,7 +7,7 @@ This is very similar to a Rust implementation of the [Intel MKL VM Mathematical 
 
 There are four public interfaces for each function `func`:
 1. `func(in: &[f64], out: &mut [f64]) -> ()`
-2. `func(in: &Vec<f64>, out: &mut Vec<f64>) -> ()`
+2. `funcv(in: &Vec<f64>, out: &mut Vec<f64>) -> ()`
 3. `unsafe func_intr(in: &__m512d, out: &mut __m512d) -> ()`
 4. `unsafe _m512_func_pd(in: __m512d) -> __m512d`
 
