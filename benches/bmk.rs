@@ -1,11 +1,15 @@
 #![feature(stdsimd)]
 #![feature(new_uninit)]
+#![feature(avx512_target_feature)]
+
+mod black_scholes;
+use black_scholes::*;
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use lit_math::*;
 use rand;
 
-const N: usize = 2048;
+const N: usize = 256;
 
 fn exps_naive(c: &mut Criterion) {
     c.bench_function("exps_naive", |b| {   
@@ -13,6 +17,8 @@ fn exps_naive(c: &mut Criterion) {
         let mut y = Vec::new();
         for i in 0..N{
             x.push(rand::random());
+            x[i] -= 0.5;
+            x[i] *= 100.0;
             y.push(0.0);
         }
 
@@ -59,10 +65,13 @@ fn erfs_naive(c: &mut Criterion) {
     use statrs::function::erf::erf;
 
     c.bench_function("erfs_naive", |b| {    
-        let mut x= [0.0; N];
-        let mut y = [0.0; N];
-        for i in 0..x.len(){
-            x[i] = rand::random();
+        let mut x = Vec::new();
+        let mut y = Vec::new();
+        for i in 0..N{
+            x.push(rand::random());
+            x[i] -= 0.5;
+            x[i] *= 100.0;
+            y.push(0.0);
         }
 
         b.iter(|| {
@@ -128,6 +137,8 @@ fn expvs512(c: &mut Criterion) {
         let mut y = Vec::new();
         for i in 0..N{
             x.push(rand::random());
+            x[i] -= 0.5;
+            x[i] *= 100.0;
             y.push(0.0);
         }
 
@@ -141,14 +152,16 @@ fn expvs512(c: &mut Criterion) {
 
 fn erfs512(c: &mut Criterion) {
     c.bench_function("erfs512", |b| {    
-        let mut x = [0.0; N];
-        let mut y = [0.0; N];
-        for i in 0..x.len(){
-            x[i] = rand::random();
+        let mut x = Vec::new();
+        let mut y = Vec::new();
+        for i in 0..N{
+            x.push(rand::random());
+            x[i] -= 0.5;
+            x[i] *= 100.0;
+            y.push(0.0);
         }
-
         b.iter(|| {
-            erf(&x, &mut y);
+            erfv(&x, &mut y);
             black_box(y[0]);
         });
     });
@@ -222,18 +235,20 @@ fn sins512(c: &mut Criterion) {
 
 
 criterion_group!(benches, 
-    exps_naive, 
-    lns_naive, 
-    log2_naive, 
-    erfs_naive, 
-    atans_naive,
-    sins_naive,
-    exps512, 
-    expvs512,
-    lns512,
-    log2s512,
-    erfs512,
-    atans512,
-    sins512
+    // exps_naive, 
+    // lns_naive, 
+    // log2_naive, 
+    // erfs_naive, 
+    // atans_naive,
+    // sins_naive,
+    // exps512, 
+    // expvs512,
+    // lns512,
+    // log2s512,
+    // erfs512,
+    // atans512,
+    // sins512,
+    bs_naive,
+    bs512
 );
 criterion_main!(benches);
