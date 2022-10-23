@@ -49,9 +49,9 @@ pub fn atanv(x: &Vec<f64>, y: &mut Vec<f64>)
     }
 }
 
-unroll_fn!(sinu, sinvu, sin_intr, 8, f64);
-unroll_fn!(tanu, tanvu, tan_intr, 8, f64);
-unroll_fn!(atanu, atanvu, atan_intr, 8, f64);
+unroll_fn!(sinu, sinvu, sin_parvu, sin_intr, 8, f64);
+unroll_fn!(tanu, tanvu, tan_parvu, tan_intr, 8, f64);
+unroll_fn!(atanu, atanvu, atan_parvu, atan_intr, 8, f64);
 
 
 #[target_feature(enable ="avx512f")]

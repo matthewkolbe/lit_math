@@ -9,13 +9,14 @@ author = "Matthew Kolbe"
 rustflags = "-C target-cpu=native -O"
 
 [dependencies]
-
+rayon = "1.5.3"
 
 [dev-dependencies]
 criterion = "0.4.0"
 rand = "0.8.5"
 approx = "0.5.1"
 statrs = "0.16"
+rayon = "1.5.3"
 
 [[bench]]
 name = "bmk"

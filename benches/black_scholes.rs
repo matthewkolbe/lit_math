@@ -64,7 +64,7 @@ const D512_HALF: __m512d = m64x8_constant!(0.5);
 const D512_NEGRATE: __m512d = m64x8_constant!(-RATE);
 
 
-const N: usize = 30_000;
+const N: usize = 32;
 
 pub fn bs_naive(c: &mut Criterion) {
     c.bench_function("bs_naive", |b| {   

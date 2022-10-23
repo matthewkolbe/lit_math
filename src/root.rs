@@ -21,7 +21,7 @@ pub fn sqrtv(x: &Vec<f64>, y: &mut Vec<f64>)
 }
 
 
-unroll_fn!(sqrtu, sqrtvu, sqrt_intr, 8, f64);
+unroll_fn!(sqrtu, sqrtvu, sqrt_parvu,sqrt_intr, 8, f64);
 
 
 #[target_feature(enable ="avx512f")]

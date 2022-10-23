@@ -19,6 +19,15 @@ pub fn standard_normal_cdf(x: &[f64], y: &mut [f64])
 }
 
 #[inline]
+pub fn standard_normal(x: &[f64], y: &mut [f64])
+{
+    unsafe{
+        standard_normalu(x, y);
+    }
+}
+
+
+#[inline]
 pub fn erfv(x: &Vec<f64>, y: &mut Vec<f64>)
 {
     unsafe{
@@ -30,12 +39,21 @@ pub fn erfv(x: &Vec<f64>, y: &mut Vec<f64>)
 pub fn standard_normal_cdfv(x: &Vec<f64>, y: &mut Vec<f64>)
 {
     unsafe{
+        standard_normalvu(x, y);
+    }
+}
+
+#[inline]
+pub fn standard_normalv(x: &Vec<f64>, y: &mut Vec<f64>)
+{
+    unsafe{
         standard_normal_cdfvu(x, y);
     }
 }
 
-unroll_fn!(erfu, erfvu, erf_intr, 8, f64);
-unroll_fn!(standard_normal_cdfu, standard_normal_cdfvu, stdnorm_intr, 8, f64);
+unroll_fn!(erfu, erfvu, erf_parvu, erf_intr, 8, f64);
+unroll_fn!(standard_normal_cdfu, standard_normal_cdfvu, standard_normal_cdf_parvu, stdnorm_cdf_intr, 8, f64);
+unroll_fn!(standard_normalu, standard_normalvu, standard_normal_parvu, stdnorm_intr, 8, f64);
 
 #[target_feature(enable ="avx512f")]
 pub unsafe fn _mm512_erf_pd(x: __m512d) -> __m512d
@@ -49,16 +67,35 @@ pub unsafe fn _mm512_erf_pd(x: __m512d) -> __m512d
 pub unsafe fn _mm512_std_norm_cdf_pd(x: __m512d) -> __m512d
 {
     let mut y = D512ZERO;
+    stdnorm_cdf_intr(&x, &mut y);
+    y
+}
+
+
+#[target_feature(enable ="avx512f")]
+pub unsafe fn _mm512_std_norm_pd(x: __m512d) -> __m512d
+{
+    let mut y = D512ZERO;
     stdnorm_intr(&x, &mut y);
     y
+}
+
+
+#[target_feature(enable ="avx512f")]
+unsafe fn stdnorm_cdf_intr(x: &__m512d, y: &mut __m512d)
+{
+    erf_intr(x, y);
+    *y = _mm512_add_pd(*y, D512ONE);
+    *y = _mm512_mul_pd(*y, D512HALF);
 }
 
 #[target_feature(enable ="avx512f")]
 unsafe fn stdnorm_intr(x: &__m512d, y: &mut __m512d)
 {
-    erf_intr(x, y);
-    *y = _mm512_add_pd(*y, D512ONE);
-    *y = _mm512_mul_pd(*y, D512HALF);
+    let inp = _mm512_mul_pd(_mm512_mul_pd(*x, *x), D512NEGHALF);
+    let mut yy: __m512d = D512ZERO;
+    exp_intr(&inp, &mut yy);
+    *y = _mm512_mul_pd(D512INVERSESQRT2PI, yy); 
 }
 
 /// AVX-512 implementation of the ERF function.
@@ -114,4 +151,5 @@ const D512E9: __m512d = m64x8_constant!(-0.6169463046791893   );
 const D512E10: __m512d = m64x8_constant!(0.4759112697935371   );
 const D512E11: __m512d = m64x8_constant!(-0.1651167117117661  );
 const D512E12: __m512d = m64x8_constant!(0.022155411339686473 );
-
+const D512INVERSESQRT2PI: __m512d = m64x8_constant!(0.398942280401432677939946059934);
+const D512NEGHALF: __m512d = m64x8_constant!(-0.5);

@@ -8,3 +8,10 @@ macro_rules! m64x8_constant {
         unsafe { std::mem::transmute::<_, _>(($x, $x, $x, $x, $x, $x, $x, $x)) }
     };
 }
+
+#[macro_export]
+macro_rules! m64x4_constant {
+    ( $x:expr ) => {
+        unsafe { std::mem::transmute::<_, _>(($x, $x, $x, $x)) }
+    };
+}

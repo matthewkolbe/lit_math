@@ -35,8 +35,8 @@ pub fn log2v(x: &Vec<f64>, y: &mut Vec<f64>)
 }
 
 
-unroll_fn!(lnu, lnvu, ln_intr, 8, f64);
-unroll_fn!(log2u, log2vu, log2_intr, 8, f64);
+unroll_fn!(lnu, lnvu, ln_parvu, ln_intr, 8, f64);
+unroll_fn!(log2u, log2vu, log2_parvu, log2_intr, 8, f64);
 
 #[target_feature(enable ="avx512f")]
 pub unsafe fn ln_intr(x: &__m512d, y: &mut __m512d)
