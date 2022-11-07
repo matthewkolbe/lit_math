@@ -6,10 +6,11 @@ license = "Apache-2.0"
 author = "Matthew Kolbe"
 
 [build]
-rustflags = "-C target-cpu=native -O"
+rustflags = "-C target-cpu=native"
 
 [dependencies]
 rayon = "1.5.3"
+paste = "1.0.9"
 
 [dev-dependencies]
 criterion = "0.4.0"

@@ -2,41 +2,8 @@ use std::arch::x86_64::*;
 use super::*;
 
 
-#[inline]
-pub fn ln(x: &[f64], y: &mut [f64])
-{
-    unsafe{
-        lnu(x, y);
-    }
-}
-
-#[inline]
-pub fn log2(x: &[f64], y: &mut [f64])
-{
-    unsafe{
-        log2u(x, y);
-    }
-}
-
-#[inline]
-pub fn lnv(x: &Vec<f64>, y: &mut Vec<f64>)
-{
-    unsafe{
-        lnvu(x, y);
-    }
-}
-
-#[inline]
-pub fn log2v(x: &Vec<f64>, y: &mut Vec<f64>)
-{
-    unsafe{
-        log2vu(x, y);
-    }
-}
-
-
-unroll_fn!(lnu, lnvu, ln_parvu, ln_intr, 8, f64);
-unroll_fn!(log2u, log2vu, log2_parvu, log2_intr, 8, f64);
+unroll_fn!(ln, ln_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
+unroll_fn!(log2, log2_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
 
 #[target_feature(enable ="avx512f")]
 pub unsafe fn ln_intr(x: &__m512d, y: &mut __m512d)

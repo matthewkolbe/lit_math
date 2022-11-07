@@ -1,6 +1,7 @@
 #![feature(stdsimd)]
 #![feature(new_uninit)]
 #![feature(avx512_target_feature)]
+#![feature(target_feature_11)]
 
 mod black_scholes;
 use black_scholes::*;
@@ -312,23 +313,23 @@ fn sins512(c: &mut Criterion) {
 
 
 criterion_group!(benches, 
-    exps_naive, 
-    exps_naive_par,
-    lns_naive, 
-    log2_naive, 
-    erfs_naive, 
-    atans_naive,
-    sins_naive,
+    // exps_naive, 
+    // exps_naive_par,
+    // lns_naive, 
+    // log2_naive, 
+    // erfs_naive, 
+    // atans_naive,
+    // sins_naive,
     exps512_par,
     expvs512,
-    expvs256,
-    exps256_par,
-    lns512,
-    log2s512,
-    erfs512,
-    atans512,
-    sins512,
-    bs_naive,
-    bs512
+    // expvs256,
+    // exps256_par,
+    // lns512,
+    // log2s512,
+    // erfs512,
+    // atans512,
+    // sins512,
+    // bs_naive,
+    // bs512
 );
 criterion_main!(benches);

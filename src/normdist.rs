@@ -2,58 +2,10 @@ use std::arch::x86_64::*;
 use super::*;
 
 
-#[inline]
-pub fn erf(x: &[f64], y: &mut [f64])
-{
-    unsafe{
-        erfu(x, y);
-    }
-}
 
-#[inline]
-pub fn standard_normal_cdf(x: &[f64], y: &mut [f64])
-{
-    unsafe{
-        standard_normal_cdfu(x, y);
-    }
-}
-
-#[inline]
-pub fn standard_normal(x: &[f64], y: &mut [f64])
-{
-    unsafe{
-        standard_normalu(x, y);
-    }
-}
-
-
-#[inline]
-pub fn erfv(x: &Vec<f64>, y: &mut Vec<f64>)
-{
-    unsafe{
-        erfvu(x, y);
-    }
-}
-
-#[inline]
-pub fn standard_normal_cdfv(x: &Vec<f64>, y: &mut Vec<f64>)
-{
-    unsafe{
-        standard_normalvu(x, y);
-    }
-}
-
-#[inline]
-pub fn standard_normalv(x: &Vec<f64>, y: &mut Vec<f64>)
-{
-    unsafe{
-        standard_normal_cdfvu(x, y);
-    }
-}
-
-unroll_fn!(erfu, erfvu, erf_parvu, erf_intr, 8, f64);
-unroll_fn!(standard_normal_cdfu, standard_normal_cdfvu, standard_normal_cdf_parvu, stdnorm_cdf_intr, 8, f64);
-unroll_fn!(standard_normalu, standard_normalvu, standard_normal_parvu, stdnorm_intr, 8, f64);
+unroll_fn!(erf, erf_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
+unroll_fn!(standard_normal_cdf, stdnorm_cdf_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
+unroll_fn!(standard_normal, stdnorm_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
 
 #[target_feature(enable ="avx512f")]
 pub unsafe fn _mm512_erf_pd(x: __m512d) -> __m512d

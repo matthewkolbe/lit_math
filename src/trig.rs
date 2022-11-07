@@ -1,57 +1,10 @@
 use std::arch::x86_64::*;
 use super::*;
 
-#[inline]
-pub fn sin(x: &[f64], y: &mut [f64])
-{
-    unsafe{
-        sinu(x, y);
-    }
-}
 
-#[inline]
-pub fn tan(x: &[f64], y: &mut [f64])
-{
-    unsafe{
-        tanu(x, y);
-    }
-}
-
-#[inline]
-pub fn atan(x: &[f64], y: &mut [f64])
-{
-    unsafe{
-        atanu(x, y);
-    }
-}
-
-#[inline]
-pub fn sinv(x: &Vec<f64>, y: &mut Vec<f64>)
-{
-    unsafe{
-        sinvu(x, y);
-    }
-}
-
-#[inline]
-pub fn tanv(x: &Vec<f64>, y: &mut Vec<f64>)
-{
-    unsafe{
-        tanvu(x, y);
-    }
-}
-
-#[inline]
-pub fn atanv(x: &Vec<f64>, y: &mut Vec<f64>)
-{
-    unsafe{
-        atanvu(x, y);
-    }
-}
-
-unroll_fn!(sinu, sinvu, sin_parvu, sin_intr, 8, f64);
-unroll_fn!(tanu, tanvu, tan_parvu, tan_intr, 8, f64);
-unroll_fn!(atanu, atanvu, atan_parvu, atan_intr, 8, f64);
+unroll_fn!(sin, sin_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
+unroll_fn!(tan, tan_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
+unroll_fn!(atan, atan_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
 
 
 #[target_feature(enable ="avx512f")]
