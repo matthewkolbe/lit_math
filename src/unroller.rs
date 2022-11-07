@@ -67,6 +67,7 @@ macro_rules! unroll_fn {
 
                 let mut xx: $simdty;
                 let mut yy: $simdty;
+
                 let mut i: usize = 0;
                 if n >= 4*VSZ
                 {
@@ -224,9 +225,9 @@ macro_rules! unroll_fn {
 
 #[macro_export]
 macro_rules! lane_size {
-    (__m256d) => { 4} ;
+    (__m256d) => { 4 } ;
     (__m512d) => { 8 };
-    (__m256s) => { 8} ;
+    (__m256s) => { 8 } ;
     (__m512s) => { 16 };
 }
 
