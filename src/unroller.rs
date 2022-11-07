@@ -3,10 +3,10 @@
 // $fun    -- the avx implementation with an avx512 signature (where x is type __m512, and y (the output) is a &mut __m512)
 // $load   -- the conversion function from a pointer to a $simdty
 // $store  -- the conversion function from a $simdty to a pointer
-// $simdty -- the SIMD type we're working on (e.g. __m512d). Must match $vsz and $numty
+// $simdty -- the SIMD type we're working on (e.g. __m512d). Must match $numty
 // $numty  -- the funamental data type (e.g. f64, f32, u16)
 //
-// TODO: $vsz and $numty are implied by $simdty. There has to be a way to get these values given $simdty.
+// TODO: $numty is implied by $simdty. There has to be a way to get this input given $simdty.
 #[macro_export]
 macro_rules! unroll_fn {
     ($name:ident, $fun:expr, $load:expr, $store:expr, $simdty:ty, $numty:ty) => {
