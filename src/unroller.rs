@@ -7,6 +7,13 @@
 // $numty  -- the funamental data type (e.g. f64, f32, u16)
 //
 // TODO: $numty is implied by $simdty. There has to be a way to get this input given $simdty.
+//
+// BIG TODO: this creates x -> y functions. Expand the macro to do (x0, x1) -> y functions, and 
+// so on for higher dimensions. 
+//
+// TODO: both funcu and funcvu have basically the same body. Find a way not do duplicate the code.
+//
+// PROBLEM: resolve target_feature
 #[macro_export]
 macro_rules! unroll_fn {
     ($name:ident, $fun:expr, $load:expr, $store:expr, $simdty:ty, $numty:ty) => {
@@ -22,23 +29,14 @@ macro_rules! unroll_fn {
             }
 
             #[inline]
-            pub fn [<$name v>](x: &Vec<$numty>, y: &mut Vec<$numty>)
+            pub fn [<$name _par>](x: &[$numty], y: &mut [$numty])
             {
                 unsafe{
-                    [<$name vu>](x, y);
+                    [<$name _paru>](x, y);
                 }
             }
 
-            #[inline]
-            pub fn [<$name _parv>](x: &Vec<$numty>, y: &mut Vec<$numty>)
-            {
-                unsafe{
-                    [<$name _parvu>](x, y);
-                }
-            }
-
-            #[target_feature(enable ="avx512f")]
-            unsafe fn [<$name u>](x: &[$numty], y: &mut [$numty]) {
+            attr_helper!($simdty, unsafe fn [<$name u>](x: &[$numty], y: &mut [$numty]) {
                 let nn = x.len();
                 let n = nn as i32; 
                 assert_eq!(nn, y.len());
@@ -53,98 +51,11 @@ macro_rules! unroll_fn {
                         xa[i] = x[i];
                     }
                     
-                    let xx = $load(&xa[0] as *const $numty);
-                    let mut yy = $load(&ya[0] as *const $numty);
-
-                    $fun(&xx, &mut yy);
-                    _mm512_storeu_pd(&mut ya[0] as *mut $numty, yy);
-
-                    for i in 0..nn {
-                        y[i] = ya[i];
-                    }
-                    return;
-                }
-
-                let mut xx: $simdty;
-                let mut yy: $simdty;
-
-                let mut i: usize = 0;
-                if n >= 4*VSZ
-                {
-                    let mut xx1: $simdty;
-                    let mut yy1: $simdty;
-                    let mut xx2: $simdty;
-                    let mut yy2: $simdty;
-                    let mut xx3: $simdty;
-                    let mut yy3: $simdty;
-
-                    while (i as i32) <= (n - 4*VSZ)
-                    {
-                        xx = $load(&x[i] as *const $numty);
-                        yy = $load(&y[i] as *const $numty);
-                        xx1 = $load(&x[i+VSZU] as *const $numty);
-                        yy1 = $load(&y[i+VSZU] as *const $numty);
-                        xx2 = $load(&x[i+2*VSZU] as *const $numty);
-                        yy2 = $load(&y[i+2*VSZU] as *const $numty);
-                        xx3 = $load(&x[i+3*VSZU] as *const $numty);
-                        yy3 = $load(&y[i+3*VSZU] as *const $numty);
-                        $fun(&xx, &mut yy);
-                        $fun(&xx1, &mut yy1);
-                        $fun(&xx2, &mut yy2);
-                        $fun(&xx3, &mut yy3);
-
-                        $store(&mut y[i] as *mut $numty, yy);
-                        i += VSZU;
-                        $store(&mut y[i] as *mut $numty, yy1);
-                        i += VSZU;
-                        $store(&mut y[i] as *mut $numty, yy2);
-                        i += VSZU;
-                        $store(&mut y[i] as *mut $numty, yy3);
-                        i += VSZU;
-                    }
-                }
-
-                while (i as i32) <= (n - VSZ)
-                {
-                    xx = $load(&x[i] as *const $numty);
-                    yy = $load(&y[i] as *const $numty);
-                    $fun(&xx, &mut yy);
-                    $store(&mut y[i] as *mut $numty, yy);
-                    i += VSZU;
-                }
-
-                if i != nn
-                {
-                    i = nn - VSZU;
-                    xx = $load(&x[i] as *const $numty);
-                    yy = $load(&y[i] as *const $numty);
-                    $fun(&xx, &mut yy);
-                    $store(&mut y[i] as *mut $numty, yy);
-                }
-            }
-
-            #[target_feature(enable ="avx512f")]
-            #[target_feature(enable ="avx512dq")]
-            unsafe fn [<$name vu>](x: &Vec<$numty>, y: &mut Vec<$numty>) {
-                let nn = x.len();
-                let n = nn as i32; 
-                assert_eq!(nn, y.len());
-                const VSZ: i32 = lane_size!($simdty);
-                const VSZU: usize = lane_size!($simdty);
-
-                if n < VSZ as i32
-                {
-                    let mut xa = [0.0; VSZU];
-                    let mut ya = [0.0; VSZU];
-                    for i in 0..nn {
-                        xa[i] = x[i];
-                    }
+                    let xx = $load(xa.as_ptr());
+                    let mut yy = $load(ya.as_mut_ptr());
                     
-                    let xx = $load(&xa[0] as *const $numty);
-                    let mut yy = $load(&ya[0] as *const $numty);
-
                     $fun(&xx, &mut yy);
-                    $store(&mut ya[0] as *mut $numty, yy);
+                    $store(ya.as_mut_ptr(), yy);
 
                     for i in 0..nn {
                         y[i] = ya[i];
@@ -155,6 +66,8 @@ macro_rules! unroll_fn {
                 let mut xx: $simdty;
                 let mut yy: $simdty;
                 let mut i: usize = 0;
+                let xptr = x.as_ptr();
+                let yptr = y.as_mut_ptr();
 
                 if n >= 4*VSZ
                 {
@@ -167,52 +80,52 @@ macro_rules! unroll_fn {
 
                     while (i as i32) <= (n - 4*VSZ)
                     {
-                        xx = $load(&x[i] as *const $numty);
-                        xx1 = $load(&x[i+VSZU] as *const $numty);
-                        xx2 = $load(&x[i+2*VSZU] as *const $numty);
-                        xx3 = $load(&x[i+3*VSZU] as *const $numty);
-                        yy = $load(&y[i] as *const $numty);
-                        yy1 = $load(&y[i+VSZU] as *const $numty);
-                        yy2 = $load(&y[i+2*VSZU] as *const $numty);
-                        yy3 = $load(&y[i+3*VSZU] as *const $numty);
+                        xx = $load(xptr.add(i));
+                        yy = $load(yptr.add(i));
+                        xx1 = $load(xptr.add(i+VSZU));
+                        yy1 = $load(yptr.add(i+VSZU));
+                        xx2 = $load(xptr.add(i+2*VSZU));
+                        yy2 = $load(yptr.add(i+2*VSZU));
+                        xx3 = $load(xptr.add(i+3*VSZU));
+                        yy3 = $load(yptr.add(i+3*VSZU));
+
                         $fun(&xx, &mut yy);
                         $fun(&xx1, &mut yy1);
                         $fun(&xx2, &mut yy2);
                         $fun(&xx3, &mut yy3);
 
-                        $store(&mut y[i] as *mut $numty, yy);
+                        $store(yptr.add(i), yy);
                         i += VSZU;
-                        $store(&mut y[i] as *mut $numty, yy1);
+                        $store(yptr.add(i), yy1);
                         i += VSZU;
-                        $store(&mut y[i] as *mut $numty, yy2);
+                        $store(yptr.add(i), yy2);
                         i += VSZU;
-                        $store(&mut y[i] as *mut $numty, yy3);
+                        $store(yptr.add(i), yy3);
                         i += VSZU;
                     }
                 }
 
                 while (i as i32) <= (n - VSZ)
                 {
-                    xx = $load(&x[i] as *const $numty);
-                    yy = $load(&y[i] as *const $numty);
+                    xx = $load(xptr.add(i));
+                    yy = $load(yptr.add(i));
                     $fun(&xx, &mut yy);
-                    $store(&mut y[i] as *mut $numty, yy);
+                    $store(yptr.add(i), yy);
                     i += VSZU;
                 }
 
                 if i != nn
                 {
                     i = nn - VSZU;
-                    xx = $load(&x[i] as *const $numty);
-                    yy = $load(&y[i] as *const $numty);
+                    xx = $load(xptr.add(i));
+                    yy = $load(yptr.add(i));
                     $fun(&xx, &mut yy);
-                    $store(&mut y[i] as *mut $numty, yy);
+                    $store(yptr.add(i), yy);
                 }
-            }
+            });
 
             #[inline]
-            #[target_feature(enable ="avx512f")]
-            unsafe fn [<$name  _parvu>](x: &Vec<$numty>, y: &mut Vec<$numty>) {
+            unsafe fn [<$name  _paru>](x: &[$numty], y: &mut [$numty]) {
                 use rayon::prelude::*;
                 let chunk: usize = x.len() / 32;
 
@@ -222,7 +135,6 @@ macro_rules! unroll_fn {
     }
 }
 
-
 #[macro_export]
 macro_rules! lane_size {
     (__m256d) => { 4 } ;
@@ -231,6 +143,21 @@ macro_rules! lane_size {
     (__m512s) => { 16 };
 }
 
+#[macro_export]
+macro_rules! attr_helper {
+    (__m512d, $function:item) => {
+        #[inline]
+        #[target_feature(enable = "avx512f")] 
+        $function
+    };
+    (__m256d, $function:item) => {
+        #[inline]
+        #[target_feature(enable ="avx2")]
+        #[target_feature(enable ="avx")]
+        #[target_feature(enable ="fma")]
+        $function
+    };
+}
 
 #[macro_export]
 macro_rules! unroll_fn_2 {
