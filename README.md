@@ -7,14 +7,19 @@ This is very similar to a Rust implementation of the [Intel MKL VM Mathematical 
 
 There are four public interfaces for each function `func`:
 1. `func(in: &[f64], out: &mut [f64]) -> ()`
-2. `funcv(in: &Vec<f64>, out: &mut Vec<f64>) -> ()`
-3. `func_parvu(in: &Vec<f64>, out: &mut Vec<f64>) -> ()`
-4. `unsafe func_intr(in: &__m512d, out: &mut __m512d) -> ()`
-5. `unsafe _m512_func_pd(in: __m512d) -> __m512d`
+2. `func_par(in: &[f64], out: &mut [f64]) -> ()`
+3. `unsafe func_intr(in: &__m512d, out: &mut __m512d) -> ()`
+4. `unsafe _m512_func_pd(in: __m512d) -> __m512d`
 
-The first two are used to compute an array of inputs as quickly as possible for the given function. The benchmarks section features plenty of examples of how this is done. Say you want to calculate $e^x$ on n $x$ values: you allocate what `x` inputs you want to calc on, prealloate a `y` return array, and call `lit_math::exp(&x, &mut y)`. The third will automatically use a Rayon parallelization scheme to go faster (or slower), depending on your inputs and CPU.
+The first one is used to compute an array of inputs as quickly as possible for the given function. The benchmarks section features plenty of examples of how this is done. Say you want to calculate $e^x$ on n $x$ values: you allocate what `x` inputs you want to calc on, prealloate a `y` return array, and call `lit_math::exp(&x, &mut y)`. The second will automatically use a Rayon parallelization scheme to go faster (or slower), depending on your inputs and CPU.
 
 The other two can be used as building blocks to make more complicated functions.
+
+### More Advanced Usage
+
+The `unroll_fn` macro can be used to turn any function with the signature `unsafe func_intr(in: &__m512d, out: &mut __m512d) -> ()` into optimized unrolled and parallel functions like those mentioned in 1 and 2 above. This macro is the one used to generate 1 and 2, so examples for how to use it are in the source for `exp`.
+
+TODO: expand the interface to handle an arbitrarily large number of input values.  
 
 ### Speedup
 
