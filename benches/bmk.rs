@@ -157,7 +157,7 @@ fn exps512_par(c: &mut Criterion) {
         }
 
         b.iter(|| {
-            exp_parv(&x, &mut y);
+            exp_par(&x, &mut y);
             black_box(y[0]);
         });
     });
@@ -175,7 +175,7 @@ fn expvs512(c: &mut Criterion) {
         }
 
         b.iter(|| {
-            expv(&x, &mut y);
+            exp(&x, &mut y);
             black_box(y[0]);
         });
     });
@@ -239,7 +239,7 @@ fn erfs512(c: &mut Criterion) {
             y.push(0.0);
         }
         b.iter(|| {
-            erfv(&x, &mut y);
+            erf(&x, &mut y);
             black_box(y[0]);
         });
     });
