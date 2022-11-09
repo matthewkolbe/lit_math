@@ -10,10 +10,6 @@
 //
 // BIG TODO: this creates x -> y functions. Expand the macro to do (x0, x1) -> y functions, and 
 // so on for higher dimensions. 
-//
-// TODO: both funcu and funcvu have basically the same body. Find a way not do duplicate the code.
-//
-// PROBLEM: resolve target_feature
 #[macro_export]
 macro_rules! unroll_fn {
     ($name:ident, $fun:expr, $load:expr, $store:expr, $simdty:ty, $numty:ty) => {
@@ -53,7 +49,7 @@ macro_rules! unroll_fn {
                     
                     let xx = $load(xa.as_ptr());
                     let mut yy = $load(ya.as_mut_ptr());
-                    
+
                     $fun(&xx, &mut yy);
                     $store(ya.as_mut_ptr(), yy);
 
