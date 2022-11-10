@@ -1,30 +1,13 @@
 use std::arch::x86_64::*;
 use super::*;
 
-#[inline]
-pub fn exp256(x: &[f64], y: &mut [f64])
-{
-    unsafe{
-        exp256u(x, y);
-    }
-}
-
-#[inline]
-pub fn exp256v(x: &Vec<f64>, y: &mut Vec<f64>)
-{
-    unsafe{
-        exp256vu(x, y);
-    }
-}
-
 
 unroll_fn!(exp, exp_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
 unroll_fn!(exp2, exp2_intr,_mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
-unroll_fn_256!(exp256u, exp256vu, exp_intr2, 4, f64);
+unroll_fn!(exp256, exp2_intr2, _mm256_loadu_pd, _mm256_storeu_pd, __m256d, f64);
 
 #[inline]
-#[target_feature(enable ="avx512f")]
-#[target_feature(enable ="avx512dq")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn exp_intr(x: &__m512d, y: &mut __m512d)
 {
     let xx = _mm512_mul_pd(*x, D512_LOG2EF);
@@ -40,8 +23,7 @@ pub unsafe fn exp_intr2(x: &__m256d, y: &mut __m256d)
 }
 
 #[inline]
-#[target_feature(enable ="avx512f")]
-#[target_feature(enable ="avx512dq")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn _mm512_powe_pd(x: __m512d) -> __m512d
 {
     let xx = _mm512_mul_pd(x, D512_LOG2EF);
@@ -51,8 +33,7 @@ pub unsafe fn _mm512_powe_pd(x: __m512d) -> __m512d
 }
 
 #[inline]
-#[target_feature(enable ="avx512f")]
-#[target_feature(enable ="avx512dq")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn _mm512_pow2_pd(x: __m512d) -> __m512d
 {
     let mut y = D512_ZERO;
@@ -61,8 +42,7 @@ pub unsafe fn _mm512_pow2_pd(x: __m512d) -> __m512d
 }
 
 #[inline]
-#[target_feature(enable ="avx512f")]
-#[target_feature(enable ="avx512dq")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn exp2_intr(x: &__m512d, y: &mut __m512d)
 {
     // Checks if x is greater than the highest acceptable argument. Stores the information for later to

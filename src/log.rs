@@ -5,14 +5,14 @@ use super::*;
 unroll_fn!(ln, ln_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
 unroll_fn!(log2, log2_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
 
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn ln_intr(x: &__m512d, y: &mut __m512d)
 {
     log2_intr(&x, y);
     *y = _mm512_mul_pd(D512_LN2, *y);
 }
 
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn _mm512_ln_pd(x: __m512d) -> __m512d
 {
     let mut y = log::D512_ZERO;
@@ -20,7 +20,7 @@ pub unsafe fn _mm512_ln_pd(x: __m512d) -> __m512d
     _mm512_mul_pd(D512_LN2, y)
 }
 
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn _mm512_log2_pd(x: __m512d) -> __m512d
 {
     let mut y = D512_ZERO;
@@ -28,7 +28,7 @@ pub unsafe fn _mm512_log2_pd(x: __m512d) -> __m512d
     y
 }
 
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn log2_intr(x: &__m512d, y: &mut __m512d)
 {
     // This algorithm uses the properties of floating point number to transform x into d*2^m, so log(x)
@@ -49,7 +49,7 @@ pub unsafe fn log2_intr(x: &__m512d, y: &mut __m512d)
 
 
 /// AVX-512 implementation of log base 2 in the interval of [1,2]
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 unsafe fn log2_in_1_2(x: &__m512d, y: &mut __m512d)
 {
     *y = _mm512_mul_pd(*x, D512_TWO_THIRDS);

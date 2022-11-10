@@ -38,6 +38,9 @@ macro_rules! unroll_fn {
                 assert_eq!(nn, y.len());
                 const VSZ: i32 = lane_size!($simdty);
                 const VSZU: usize = lane_size!($simdty);
+                const VSZU2: usize = 2 * VSZU;
+                const VSZU3: usize = 3 * VSZU;
+                const VSZ4: i32 = 4 * VSZ;
 
                 if n < VSZ as i32
                 {
@@ -65,7 +68,7 @@ macro_rules! unroll_fn {
                 let xptr = x.as_ptr();
                 let yptr = y.as_mut_ptr();
 
-                if n >= 4*VSZ
+                if n >= VSZ4
                 {
                     let mut xx1: $simdty;
                     let mut yy1: $simdty;
@@ -74,16 +77,16 @@ macro_rules! unroll_fn {
                     let mut xx3: $simdty;
                     let mut yy3: $simdty;
 
-                    while (i as i32) <= (n - 4*VSZ)
+                    while (i as i32) <= (n - VSZ4)
                     {
                         xx = $load(xptr.add(i));
                         yy = $load(yptr.add(i));
                         xx1 = $load(xptr.add(i+VSZU));
                         yy1 = $load(yptr.add(i+VSZU));
-                        xx2 = $load(xptr.add(i+2*VSZU));
-                        yy2 = $load(yptr.add(i+2*VSZU));
-                        xx3 = $load(xptr.add(i+3*VSZU));
-                        yy3 = $load(yptr.add(i+3*VSZU));
+                        xx2 = $load(xptr.add(i+VSZU2));
+                        yy2 = $load(yptr.add(i+VSZU2));
+                        xx3 = $load(xptr.add(i+VSZU3));
+                        yy3 = $load(yptr.add(i+VSZU3));
 
                         $fun(&xx, &mut yy);
                         $fun(&xx1, &mut yy1);
@@ -143,7 +146,7 @@ macro_rules! lane_size {
 macro_rules! attr_helper {
     (__m512d, $function:item) => {
         #[inline]
-        #[target_feature(enable = "avx512f")] 
+        #[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
         $function
     };
     (__m256d, $function:item) => {

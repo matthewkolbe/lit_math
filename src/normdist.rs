@@ -7,7 +7,7 @@ unroll_fn!(erf, erf_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
 unroll_fn!(standard_normal_cdf, stdnorm_cdf_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
 unroll_fn!(standard_normal, stdnorm_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
 
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn _mm512_erf_pd(x: __m512d) -> __m512d
 {
     let mut y = D512ZERO;
@@ -15,7 +15,7 @@ pub unsafe fn _mm512_erf_pd(x: __m512d) -> __m512d
     y
 }
 
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn _mm512_std_norm_cdf_pd(x: __m512d) -> __m512d
 {
     let mut y = D512ZERO;
@@ -24,7 +24,7 @@ pub unsafe fn _mm512_std_norm_cdf_pd(x: __m512d) -> __m512d
 }
 
 
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn _mm512_std_norm_pd(x: __m512d) -> __m512d
 {
     let mut y = D512ZERO;
@@ -33,7 +33,7 @@ pub unsafe fn _mm512_std_norm_pd(x: __m512d) -> __m512d
 }
 
 
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 unsafe fn stdnorm_cdf_intr(x: &__m512d, y: &mut __m512d)
 {
     erf_intr(x, y);
@@ -41,7 +41,7 @@ unsafe fn stdnorm_cdf_intr(x: &__m512d, y: &mut __m512d)
     *y = _mm512_mul_pd(*y, D512HALF);
 }
 
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 unsafe fn stdnorm_intr(x: &__m512d, y: &mut __m512d)
 {
     let inp = _mm512_mul_pd(_mm512_mul_pd(*x, *x), D512NEGHALF);
@@ -51,7 +51,7 @@ unsafe fn stdnorm_intr(x: &__m512d, y: &mut __m512d)
 }
 
 /// AVX-512 implementation of the ERF function.
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn erf_intr(x: &__m512d, y: &mut __m512d)
 {
     let le_mask = _mm512_cmple_pd_mask(*x, D512NEGATIVE_ZERO);

@@ -2,6 +2,7 @@ use std::arch::x86_64::*;
 use super::*;
 
 #[inline]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub fn dot(x: &[f64], y: &mut [f64]) -> f64
 {
     unsafe{

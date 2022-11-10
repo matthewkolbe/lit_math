@@ -7,7 +7,7 @@ unroll_fn!(tan, tan_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
 unroll_fn!(atan, atan_intr, _mm512_loadu_pd, _mm512_storeu_pd, __m512d, f64);
 
 
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn sin_intr(x: &__m512d, y: &mut __m512d)
 {
     // Since sin() is periodic around 2pi, this converts x into the range of [0, 2pi]
@@ -37,7 +37,7 @@ pub unsafe fn sin_intr(x: &__m512d, y: &mut __m512d)
     *y = _mm512_mask_mul_pd(yy, negend_mask, yy, D512_NEGONE);
 }
 
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 unsafe fn sin_in_zero_to_quarter_pi(x: &__m512d, y: &mut __m512d)
 {
     let xsq = _mm512_mul_pd(*x, *x);
@@ -53,7 +53,7 @@ unsafe fn sin_in_zero_to_quarter_pi(x: &__m512d, y: &mut __m512d)
 }
 
 
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn tan_intr(x: &__m512d, y: &mut __m512d)
 {
     // Calculation:
@@ -101,7 +101,7 @@ pub unsafe fn tan_intr(x: &__m512d, y: &mut __m512d)
 }
 
 
-#[target_feature(enable ="avx512f")]
+#[target_feature(enable ="avx512f,avx512dq,avx512vl,avx512vpopcntdq,avx512vpclmulqdq,avx512cd,avx512bw")]
 pub unsafe fn atan_intr(x: &__m512d, y: &mut __m512d)
 {
     // Idea taken from https://github.com/avrdudes/avr-libc/blob/main/libm/fplib/atan.S
