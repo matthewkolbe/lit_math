@@ -5,12 +5,16 @@ edition = "2021"
 license = "Apache-2.0"
 author = "Matthew Kolbe"
 
+[profile.release]
+lto = true
+
 [build]
 rustflags = "-C target-cpu=native"
 
 [dependencies]
 rayon = "1.5.3"
 paste = "1.0.9"
+crossbeam = "0.8.2"
 
 [dev-dependencies]
 criterion = "0.4.0"
