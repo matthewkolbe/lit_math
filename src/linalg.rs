@@ -27,6 +27,9 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64
         let mut yy: __m512d;
         let mut rr = D512_ZERO;
         let mut i: usize = 0;
+        let xptr = x.as_ptr();
+        let yptr = y.as_ptr();
+
         if n > 31
         {
             let mut xx1: __m512d;
@@ -41,17 +44,17 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64
 
             while (i as i32) < (n - 31)
             {
-                xx = _mm512_loadu_pd(&x[i] as *const f64);
-                yy = _mm512_loadu_pd(&y[i] as *const f64);
+                xx = _mm512_loadu_pd(xptr.add(i));
+                yy = _mm512_loadu_pd(yptr.add(i));
                 i += VSZ;
-                xx1 = _mm512_loadu_pd(&x[i] as *const f64);
-                yy1 = _mm512_loadu_pd(&y[i] as *const f64);
+                xx1 = _mm512_loadu_pd(xptr.add(i));
+                yy1 = _mm512_loadu_pd(yptr.add(i));
                 i += VSZ;
-                xx2 = _mm512_loadu_pd(&x[i] as *const f64);
-                yy2 = _mm512_loadu_pd(&y[i] as *const f64);
+                xx2 = _mm512_loadu_pd(xptr.add(i));
+                yy2 = _mm512_loadu_pd(yptr.add(i));
                 i += VSZ;
-                xx3 = _mm512_loadu_pd(&x[i] as *const f64);
-                yy3 = _mm512_loadu_pd(&y[i] as *const f64);
+                xx3 = _mm512_loadu_pd(xptr.add(i));
+                yy3 = _mm512_loadu_pd(yptr.add(i));
                 i += VSZ;
 
                 rr = _mm512_fmadd_pd(xx, yy, rr);
@@ -67,8 +70,8 @@ pub fn dot(x: &[f64], y: &[f64]) -> f64
 
         while (i as i32) < (n - 7)
         {
-            xx = _mm512_loadu_pd(&x[i] as *const f64);
-            yy = _mm512_loadu_pd(&y[i] as *const f64);
+            xx = _mm512_loadu_pd(xptr.add(i));
+            yy = _mm512_loadu_pd(yptr.add(i));
             i += VSZ;
             rr = _mm512_fmadd_pd(xx, yy, rr);
         }
