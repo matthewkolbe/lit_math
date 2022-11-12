@@ -437,6 +437,35 @@ fn dot_naive_par2(c: &mut Criterion) {
     });
 }
 
+fn dot_naive_par_wtf(c: &mut Criterion) {
+    use rayon::prelude::*;
+    c.bench_function("dot_naive_par_wtf", |b| {    
+        const CORES: usize = 22;
+        let mut x: Vec<Box<[f64]>> = Vec::new();
+        let mut y: Vec<Box<[f64]>> = Vec::new();
+        let mut r: Vec<usize> = Vec::new();
+        let mut rr: Vec<f64> = Vec::new();
+        for i in 0..CORES {
+            x.push(vec![0.0; N/CORES].into_boxed_slice());
+            y.push(vec![0.0; N/CORES].into_boxed_slice());
+            r.push(i);
+            rr.push(0.0);
+        }
+
+        b.iter(|| {
+
+            r.par_iter().zip(rr.par_iter_mut()).for_each(|(i, res)| 
+            {
+                *res = ndot(&x[*i],&y[*i]);
+            });
+            
+            let ress: f64 = rr.iter().sum();
+            black_box(ress);
+        });
+  
+    });
+}
+
 fn dot512_par(c: &mut Criterion) {
     use rayon::prelude::*;
     c.bench_function("dot512_par", |b| {    
@@ -469,6 +498,36 @@ fn dot512_par(c: &mut Criterion) {
     });
 }
 
+fn dot512_par_wtf(c: &mut Criterion) {
+    use rayon::prelude::*;
+    c.bench_function("dot512_par_wtf", |b| {    
+        const CORES: usize = 22;
+        let mut x: Vec<Box<[f64]>> = Vec::new();
+        let mut y: Vec<Box<[f64]>> = Vec::new();
+        let mut r: Vec<usize> = Vec::new();
+        let mut rr: Vec<f64> = Vec::new();
+        for i in 0..CORES {
+            x.push(vec![0.0; N/CORES].into_boxed_slice());
+            y.push(vec![0.0; N/CORES].into_boxed_slice());
+            r.push(i);
+            rr.push(0.0);
+        }
+        unsafe {
+            b.iter(|| {
+
+                r.par_iter().zip(rr.par_iter_mut()).for_each(|(i, res)| 
+                {
+                    *res = dot(&x[*i],&y[*i]);
+                });
+                
+                let ress: f64 = rr.iter().sum();
+                black_box(ress);
+            });
+        }
+    });
+}
+
+
 
 criterion_group!(benches, 
     // exps_naive, 
@@ -491,9 +550,11 @@ criterion_group!(benches,
     // sins512_par,
     dot_naive,
     dot512,
-    dot_naive_par,
-    dot_naive_par2,
-    dot512_par,
+    // dot_naive_par,
+    // dot_naive_par2,
+    dot_naive_par_wtf,
+    //dot512_par,
+    dot512_par_wtf,
     // bs_naive,
     // bs512
 );
